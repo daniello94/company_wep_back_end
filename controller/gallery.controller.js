@@ -33,9 +33,6 @@ exports.createGallery = async (req, res) => {
 exports.addPhotos = async (req, res, next) => {
     const { galleryId } = req.params;
     const bucket = storage.bucket(process.env.MY_DATA);
-
-    console.log(path.join(__dirname, 'config', 'secret-key.json'));
-
     try {
         const gallery = await Gallery.findById(galleryId);
         if (!gallery) {
