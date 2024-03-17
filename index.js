@@ -10,7 +10,7 @@ app.options('*', cors());
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-app.use("/gallery", galleryAdd);
+app.use("/", galleryAdd);
 
 app.get("/", function (req, res) {
     res.status(200).json("Hello from the server!");
