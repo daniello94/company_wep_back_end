@@ -1,4 +1,3 @@
 /node_modules
 /controller/config/secret-key.json
 .env
-package-lock.json
