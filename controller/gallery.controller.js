@@ -4,7 +4,11 @@ require("dotenv").config();
 const Gallery = require('../models/Gallery');
 
 const storage = new Storage({
-    keyFilename: path.join(__dirname, 'config', 'secret-key.json'),
+    projectId: process.env.GCP_PROJECT_ID,
+    credentials: {
+        client_email: process.env.GCP_CLIENT_EMAIL,
+        private_key: process.env.GCP_PRIVATE_KEY.replace(/\\n/g, '\n')
+    }
 });
 
 
@@ -29,6 +33,8 @@ exports.createGallery = async (req, res) => {
 exports.addPhotos = async (req, res, next) => {
     const { galleryId } = req.params;
     const bucket = storage.bucket(process.env.MY_DATA);
+
+    console.log(path.join(__dirname, 'config', 'secret-key.json'));
 
     try {
         const gallery = await Gallery.findById(galleryId);
