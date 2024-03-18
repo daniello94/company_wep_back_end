@@ -13,8 +13,8 @@ router.get('/galleries', galleryController.getAllGalleries);
 
 router.get('/gallery/:id', galleryController.getGalleryById);
 
-router.delete('/galleries/:galleryId/photos/:photoId', deletePhoto);
+router.delete('/galleries/:galleryId/photos/:photoId', galleryController.deletePhoto);
 
-router.patch('/galleries/:galleryId/photos/:photoId/toggleSmall', toggleSmallGallery);
+router.patch('/galleries/:galleryId/photos/:photoId/toggleSmall', galleryController.toggleSmallGallery);
 
 module.exports = router;
