@@ -11,7 +11,6 @@ const storage = new Storage({
     }
 });
 
-
 exports.createGallery = async (req, res) => {
     const { nameGallery } = req.body;
 
@@ -19,10 +18,9 @@ exports.createGallery = async (req, res) => {
         const newGallery = new Gallery({
             gallery: {
                 nameGallery: nameGallery,
-                photos: [] // początkowo galeria nie zawiera zdjęć
+                photos: []
             }
         });
-
         await newGallery.save();
         res.status(201).json({ message: 'Galeria utworzona pomyślnie', newGallery });
     } catch (error) {
@@ -75,8 +73,6 @@ exports.addPhotos = async (req, res, next) => {
     }
 };
 
-
-
 exports.getAllGalleries = async (req, res) => {
     try {
         const galleries = await Gallery.find();
@@ -98,6 +94,62 @@ exports.getGalleryById = async (req, res) => {
         res.status(200).json(gallery);
     } catch (error) {
         res.status(500).json({ message: 'Wystąpił błąd serwera', error: error.message });
+    }
+};
+
+exports.toggleSmallGallery = async (req, res) => {
+    const { galleryId, photoId } = req.params;
+
+    try {
+        const gallery = await Gallery.findById(galleryId);
+        if (!gallery) {
+            return res.status(404).json({ message: 'Galeria nie znaleziona' });
+        }
+
+        const photo = gallery.gallery.photos.find(photo => photo._id.toString() === photoId);
+        if (photo) {
+            photo.smallGallery = !photo.smallGallery;
+        } else {
+            return res.status(404).json({ message: 'Zdjęcie nie znalezione' });
+        }
+
+        await gallery.save();
+        res.status(200).json({ message: 'Flaga smallGallery zmieniona pomyślnie', gallery });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Wystąpił błąd podczas zmiany flagi', error: error.message });
+    }
+};
+
+exports.deletePhoto = async (req, res) => {
+    const { galleryId, photoId } = req.params;
+
+    try {
+        const gallery = await Gallery.findById(galleryId);
+        if (!gallery) {
+            return res.status(404).json({ message: 'Galeria nie znaleziona' });
+        }
+
+        // Znajdowanie zdjęcia do usunięcia
+        const photoIndex = gallery.gallery.photos.findIndex(photo => photo._id.toString() === photoId);
+        if (photoIndex === -1) {
+            return res.status(404).json({ message: 'Zdjęcie nie znalezione' });
+        }
+
+        const photo = gallery.gallery.photos[photoIndex];
+
+        // Usunięcie zdjęcia z Google Cloud Storage
+        const blob = bucket.file(photo.namePhoto); // Zakładając, że photo.namePhoto zawiera nazwę pliku w chmurze
+        await blob.delete();
+
+        // Usunięcie zdjęcia z tablicy photos w galerii
+        gallery.gallery.photos.splice(photoIndex, 1);
+
+        await gallery.save();
+        res.status(200).json({ message: 'Zdjęcie usunięte pomyślnie', gallery });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Wystąpił błąd podczas usuwania zdjęcia', error: error.message });
     }
 };
 
